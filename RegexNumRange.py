@@ -56,6 +56,24 @@ class NumRange:
     def __repr__(self):
         return f"NR({self.start},{self.end})" 
     
+    def compact_regex(self, s):
+        r = []
+        n = 0
+        for t in s:
+            if t == r'\d':
+                if n == 0:
+                    r.append(t)
+                n += 1
+            else:
+                if n > 1:
+                    r.append("{"+str(n)+"}")
+                n = 0
+                r.append(t)
+
+        if n > 1:
+            r.append("{"+str(n)+"}")
+        return r
+
     def to_regex(self, anchor=False):
         result = []
         for a, b in zip(str(self.start), str(self.end)):
@@ -66,7 +84,7 @@ class NumRange:
                     result.append(r'\d')
                 else:
                     result.append(f'[{a}-{b}]')
-        r = ''.join(result)
+        r = ''.join(self.compact_regex(result))
         if anchor:
             r = "^" + r + "$"
         return r
@@ -115,8 +133,8 @@ def generate_regex(start: int, end: int, anchor=False) -> list:
 #--------------------------------------------------------------------------------------
 if __name__ == '__main__':
     test_list = [
-        (100, 199, [r'1\d\d']),
-        (0, 500, [r'\d', r'[1-9]\d', r'[1-4]\d\d', '500']),
+        (100, 199, [r'1\d{2}']),
+        (0, 500, [r'\d', r'[1-9]\d', r'[1-4]\d{2}', '500']),
         (124, 137, ['12[4-9]', '13[0-7]']),
         (29, 34, ['29', '3[0-4]']),
     ]
